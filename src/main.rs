@@ -28,18 +28,7 @@ fn build_ui(app: &Application) {
         .text("Youtube url")
         .build()));
 
-    let text2 = Text::builder()
-        .margin_top(12)
-        .margin_bottom(12)
-        .margin_start(12)
-        .margin_end(12)
-        .text("Youtube url")
-        .build();
-
-    let text3 = Rc::new(RefCell::new(text2));
-
     let text_clone = text.clone();
-    let text3_clone = text3.clone();
 
     // Create a button with label and margins
     let button = Button::builder()
@@ -77,7 +66,7 @@ fn build_ui(app: &Application) {
         let text_field = text.take().text().to_string();
         let url = text_field.as_str();
 
-        println!("{} 🤯", text3.take().text());
+        println!("{} 🤯", text.take().text());
 
         if yes {
             button.set_label(&url);
@@ -87,9 +76,7 @@ fn build_ui(app: &Application) {
 
     // Und? funktioniert? Ne :( Der Button der die Url beinhalten sollte ist leer  >:(
     let container = gtk::Box::new(gtk::Orientation::Vertical, 0);
-    let _ = text3_clone.borrow().deref();
-    let _ = &text_clone.take();
-    container.append(text3_clone.borrow().deref());
+    container.append(text_clone.borrow().deref());
     container.append(&button);
 
     // Create a window and set the title
