@@ -60,7 +60,7 @@ fn build_ui(app: &Application) {
 
         if yes {
             button.set_label(&path.to_str().unwrap());
-            button.set_label(&run_ytdlp(&path.to_str().unwrap(), &text.text()));
+            button.set_label(&run_ytdlp(&path.to_str().unwrap(), &text.clone().text().to_string()));
         }
     });
 
@@ -81,7 +81,7 @@ fn build_ui(app: &Application) {
     window.show();
 }
 
-fn run_ytdlp(path: &str, url: &str) -> String {
+fn run_ytdlp(path: &str, url: &String) -> String {
     use std::process::Command;
 
     let output = {
