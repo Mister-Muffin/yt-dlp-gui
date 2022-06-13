@@ -1,3 +1,6 @@
+use std::borrow::Borrow;
+use std::cell::RefCell;
+use std::rc::Rc;
 use gtk::prelude::*;
 use gtk::{Application, ApplicationWindow, Button, Text};
 use native_dialog::{FileDialog, MessageDialog, MessageType};
@@ -17,6 +20,8 @@ fn main() {
 
 fn build_ui(app: &Application) {
 
+    let url = Rc::new(RefCell::new(String::new()));
+
     let text = Text::builder()
         .margin_top(12)
         .margin_bottom(12)
@@ -35,7 +40,8 @@ fn build_ui(app: &Application) {
     .build();
 
     // Connect to "clicked" signal of `button`
-    button.connect_clicked(move |button| {
+    button.connect_clicked(move|button| {
+        url.replace((*&text.text().to_string()).parse().unwrap());
         // Set the label to "Hello World!" after the button has been clicked on
         button.set_label("Hello World!");
 
@@ -58,9 +64,11 @@ fn build_ui(app: &Application) {
         .show_confirm()
         .unwrap();
 
+        let url: &str = &text.text();
+
         if yes {
             button.set_label(&path.to_str().unwrap());
-            button.set_label(&run_ytdlp(&path.to_str().unwrap(), &text.clone().text().to_string()));
+            button.set_label(&run_ytdlp(&path.to_str().unwrap(), url));
         }
     });
 
@@ -81,7 +89,7 @@ fn build_ui(app: &Application) {
     window.show();
 }
 
-fn run_ytdlp(path: &str, url: &String) -> String {
+fn run_ytdlp(path: &str, url: &str) -> String {
     use std::process::Command;
 
     let output = {
