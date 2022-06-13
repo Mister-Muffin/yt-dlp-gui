@@ -1,5 +1,5 @@
 use gtk::prelude::*;
-use gtk::{Application, ApplicationWindow, Button};
+use gtk::{Application, ApplicationWindow, Button, Text};
 use native_dialog::{FileDialog, MessageDialog, MessageType};
 
 fn main() {
@@ -16,14 +16,23 @@ fn main() {
 }
 
 fn build_ui(app: &Application) {
-    // Create a button with label and margins
-    let button = Button::builder()
-        .label("Press me!")
+
+    let text = Text::builder()
         .margin_top(12)
         .margin_bottom(12)
         .margin_start(12)
         .margin_end(12)
+        .text("Youtube url")
         .build();
+
+    // Create a button with label and margins
+    let button = Button::builder()
+    .label("Press me!")
+    .margin_top(12)
+    .margin_bottom(12)
+    .margin_start(12)
+    .margin_end(12)
+    .build();
 
     // Connect to "clicked" signal of `button`
     button.connect_clicked(move |button| {
@@ -31,11 +40,11 @@ fn build_ui(app: &Application) {
         button.set_label("Hello World!");
 
         let path = FileDialog::new()
-            .set_location("~")
-            //.add_filter("PNG Image", &["png"])
-            //.add_filter("JPEG Image", &["jpg", "jpeg"])
-            .show_open_single_dir()
-            .unwrap();
+        .set_location("~")
+        //.add_filter("PNG Image", &["png"])
+        //.add_filter("JPEG Image", &["jpg", "jpeg"])
+        .show_open_single_dir()
+        .unwrap();
 
         let path = match path {
             Some(path) => path,
@@ -43,36 +52,41 @@ fn build_ui(app: &Application) {
         };
 
         let yes = MessageDialog::new()
-            .set_type(MessageType::Info)
-            .set_title("Do you want to open the file?")
-            .set_text(&format!("{:#?}", path))
-            .show_confirm()
-            .unwrap();
+        .set_type(MessageType::Info)
+        .set_title("Do you want to open the file?")
+        .set_text(&format!("{:#?}", path))
+        .show_confirm()
+        .unwrap();
 
         if yes {
             button.set_label(&path.to_str().unwrap());
-            button.set_label(&run_ytdlp(&path.to_str().unwrap()));
+            button.set_label(&run_ytdlp(&path.to_str().unwrap(), &text.text()));
         }
-
     });
+
+
+    let container = gtk::Box::new(gtk::Orientation::Vertical, 0);
+    container.append(&text);
+    container.append(&button);
 
     // Create a window and set the title
     let window = ApplicationWindow::builder()
         .application(app)
         .title("My GTK App")
-        .child(&button)
         .build();
 
+    window.set_child(Some(&container));
+
     // Present window
-    window.present();
+    window.show();
 }
 
-fn run_ytdlp(path: &str) -> String {
+fn run_ytdlp(path: &str, url: &str) -> String {
     use std::process::Command;
 
     let output = {
         Command::new("yt-dlp").current_dir(path)
-            .arg("URI")
+            .arg(url)
             .output()
             .expect("failed to execute process")
     };
