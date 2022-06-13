@@ -58,7 +58,7 @@ fn build_ui(app: &Application) {
 
         let yes = MessageDialog::new()
         .set_type(MessageType::Info)
-        .set_title("Do you want to open the file?")
+        .set_title("Do you want to select this directory?")
         .set_text(&format!("{:#?}", path))
         .show_confirm()
         .unwrap();
@@ -82,7 +82,7 @@ fn build_ui(app: &Application) {
     // Create a window and set the title
     let window = ApplicationWindow::builder()
         .application(app)
-        .title("My GTK App")
+        .title("Yt-dlp GUI")
         .build();
 
     window.set_child(Some(&container));
@@ -104,7 +104,8 @@ fn run_ytdlp(path: &str, url: &str) -> String {
     let hello = output.stdout;
 
     let s = match std::str::from_utf8(&hello) {
-        Ok(v) => v,
+        //Ok(v) => v,
+        Ok(_v) => "Success",
         Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
     };
 
