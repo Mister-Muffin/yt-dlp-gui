@@ -25,7 +25,7 @@ fn build_ui(app: &Application) {
             .margin_bottom(12)
             .margin_start(12)
             .margin_end(12)
-            .placeholder_text("Youtube URL")
+            .placeholder_text("Insert Youtube URL")
             .build(),
     ));
 
@@ -33,7 +33,7 @@ fn build_ui(app: &Application) {
 
     // Create a button with label and margins
     let button = Button::builder()
-        .label("Press me!")
+        .label("Download!")
         .margin_top(12)
         .margin_bottom(12)
         .margin_start(12)
