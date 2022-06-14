@@ -25,7 +25,7 @@ fn build_ui(app: &Application) {
             .margin_bottom(12)
             .margin_start(12)
             .margin_end(12)
-            .text("Youtube url")
+            .placeholder_text("Youtube URL")
             .build(),
     ));
 
