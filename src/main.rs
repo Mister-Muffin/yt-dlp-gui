@@ -1,9 +1,9 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::ops::Deref;
 use gtk::prelude::*;
 use gtk::{Application, ApplicationWindow, Button, Text};
 use native_dialog::{FileDialog, MessageDialog, MessageType};
+use std::cell::RefCell;
+use std::ops::Deref;
+use std::rc::Rc;
 
 fn main() {
     // Create a new application
@@ -19,37 +19,38 @@ fn main() {
 }
 
 fn build_ui(app: &Application) {
-
-    let text = Rc::new(RefCell::new(Text::builder()
-        .margin_top(12)
-        .margin_bottom(12)
-        .margin_start(12)
-        .margin_end(12)
-        .text("Youtube url")
-        .build()));
+    let text = Rc::new(RefCell::new(
+        Text::builder()
+            .margin_top(12)
+            .margin_bottom(12)
+            .margin_start(12)
+            .margin_end(12)
+            .text("Youtube url")
+            .build(),
+    ));
 
     let text_clone = text.clone();
 
     // Create a button with label and margins
     let button = Button::builder()
-    .label("Press me!")
-    .margin_top(12)
-    .margin_bottom(12)
-    .margin_start(12)
-    .margin_end(12)
-    .build();
+        .label("Press me!")
+        .margin_top(12)
+        .margin_bottom(12)
+        .margin_start(12)
+        .margin_end(12)
+        .build();
 
     // Connect to "clicked" signal of `button`
-    button.connect_clicked(move|button| {
+    button.connect_clicked(move |button| {
         // Set the label to "Hello World!" after the button has been clicked on
         button.set_label("Hello World!");
 
         let path = FileDialog::new()
-        .set_location("~")
-        //.add_filter("PNG Image", &["png"])
-        //.add_filter("JPEG Image", &["jpg", "jpeg"])
-        .show_open_single_dir()
-        .unwrap();
+            .set_location("~")
+            //.add_filter("PNG Image", &["png"])
+            //.add_filter("JPEG Image", &["jpg", "jpeg"])
+            .show_open_single_dir()
+            .unwrap();
 
         let path = match path {
             Some(path) => path,
@@ -57,11 +58,11 @@ fn build_ui(app: &Application) {
         };
 
         let yes = MessageDialog::new()
-        .set_type(MessageType::Info)
-        .set_title("Do you want to select this directory?")
-        .set_text(&format!("{:#?}", path))
-        .show_confirm()
-        .unwrap();
+            .set_type(MessageType::Info)
+            .set_title("Do you want to select this directory?")
+            .set_text(&format!("{:#?}", path))
+            .show_confirm()
+            .unwrap();
 
         let text_field = text.take().text().to_string();
         let url = text_field.as_str();
@@ -91,11 +92,11 @@ fn build_ui(app: &Application) {
     window.show();
 }
 
-fn run_ytdlp(path: &str, url: &str) -> String {
-    use std::process::Command;
+fn run_ytdlp(path: &str, url: &str) -> String {    use std::process::Command;
 
     let output = {
-        Command::new("yt-dlp").current_dir(path)
+        Command::new("yt-dlp")
+            .current_dir(path)
             .arg(url)
             .output()
             .expect("failed to execute process")
