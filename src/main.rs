@@ -3,6 +3,7 @@ use gtk::{Application, ApplicationWindow, Button, CenterBox, CheckButton, Text};
 use native_dialog::{FileDialog, MessageDialog, MessageType};
 use std::cell::RefCell;
 use std::ops::Deref;
+use std::process::{Command, Output};
 use std::rc::Rc;
 
 fn main() {
@@ -29,15 +30,17 @@ fn build_ui(app: &Application) {
             .width_chars(42)
             .build(),
     ));
-
     let text_clone = text.clone();
 
-    let only_audio_check = CheckButton::builder()
-        .label("Audio only")
-        .margin_bottom(12)
-        .margin_start(12)
-        .margin_end(12)
-        .build();
+    let only_audio_check = Rc::new(RefCell::new(
+        CheckButton::builder()
+            .label("Audio only")
+            .margin_bottom(12)
+            .margin_start(12)
+            .margin_end(12)
+            .build(),
+    ));
+    let only_audio_check_clone = only_audio_check.clone();
 
     // Create a button with label and margins
     let button = Button::builder()
@@ -79,12 +82,16 @@ fn build_ui(app: &Application) {
 
         if yes {
             button.set_label(&url);
-            button.set_label(&run_ytdlp(&path.to_str().unwrap(), url));
+            button.set_label(&run_ytdlp(
+                &path.to_str().unwrap(),
+                url,
+                only_audio_check.take().is_active(),
+            ));
         }
     });
 
     let center_audio_only_check = CenterBox::new();
-    center_audio_only_check.set_center_widget(Some(&only_audio_check));
+    center_audio_only_check.set_center_widget(Some(only_audio_check_clone.borrow().deref()));
 
     let center_text = CenterBox::new();
     center_text.set_center_widget(Some(text_clone.borrow().deref()));
@@ -107,16 +114,28 @@ fn build_ui(app: &Application) {
     window.show();
 }
 
-fn run_ytdlp(path: &str, url: &str) -> String {
-    use std::process::Command;
-
-    let output = {
-        Command::new("yt-dlp")
-            .current_dir(path)
-            .arg(url)
-            .output()
-            .expect("failed to execute process")
-    };
+fn run_ytdlp(path: &str, url: &str, audio_only: bool) -> String {
+    let mut output: Output;
+    if audio_only {
+        output = {
+            Command::new("yt-dlp")
+                .current_dir(path)
+                .arg("-x")
+                .arg("--audio-format")
+                .arg("mp3")
+                .arg(url)
+                .output()
+                .expect("failed to execute process")
+        };
+    } else {
+        output = {
+            Command::new("yt-dlp")
+                .current_dir(path)
+                .arg(url)
+                .output()
+                .expect("failed to execute process")
+        };
+    }
 
     let hello = output.stdout;
 
