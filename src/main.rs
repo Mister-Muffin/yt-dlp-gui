@@ -1,9 +1,10 @@
+use gtk::prelude::*;
+use gtk::{Application, ApplicationWindow, Button, CenterBox, CheckButton, Text};
+use native_dialog::{FileDialog, MessageDialog, MessageType};
 use std::cell::RefCell;
 use std::ops::Deref;
+use std::process::{Command, Output};
 use std::rc::Rc;
-use gtk::prelude::*;
-use gtk::{Application, ApplicationWindow, Button, Text};
-use native_dialog::{FileDialog, MessageDialog, MessageType};
 
 fn main() {
     // Create a new application
@@ -27,27 +28,48 @@ fn build_ui(app: &Application) {
         .margin_end(12)
         .text("Youtube url")
         .build());
+    let text = Rc::new(RefCell::new(
+        Text::builder()
+            .margin_top(12)
+            .margin_bottom(12)
+            .margin_start(12)
+            .margin_end(12)
+            .placeholder_text("Insert Youtube URL")
+            .width_chars(42)
+            .build(),
+    ));
+    let text_clone = text.clone();
+
+    let only_audio_check = Rc::new(RefCell::new(
+        CheckButton::builder()
+            .label("Audio only")
+            .margin_bottom(12)
+            .margin_start(12)
+            .margin_end(12)
+            .build(),
+    ));
+    let only_audio_check_clone = only_audio_check.clone();
 
     // Create a button with label and margins
     let button = Button::builder()
-    .label("Press me!")
-    .margin_top(12)
-    .margin_bottom(12)
-    .margin_start(12)
-    .margin_end(12)
-    .build();
+        .label("Download!")
+        .margin_top(12)
+        .margin_bottom(12)
+        .margin_start(12)
+        .margin_end(12)
+        .build();
 
     // Connect to "clicked" signal of `button`
-    button.connect_clicked(move|button| {
+    button.connect_clicked(move |button| {
         // Set the label to "Hello World!" after the button has been clicked on
         button.set_label("Hello World!");
 
         let path = FileDialog::new()
-        .set_location("~")
-        //.add_filter("PNG Image", &["png"])
-        //.add_filter("JPEG Image", &["jpg", "jpeg"])
-        .show_open_single_dir()
-        .unwrap();
+            .set_location("~")
+            //.add_filter("PNG Image", &["png"])
+            //.add_filter("JPEG Image", &["jpg", "jpeg"])
+            .show_open_single_dir()
+            .unwrap();
 
         let path = match path {
             Some(path) => path,
@@ -55,29 +77,43 @@ fn build_ui(app: &Application) {
         };
 
         let yes = MessageDialog::new()
-        .set_type(MessageType::Info)
-        .set_title("Do you want to open the file?")
-        .set_text(&format!("{:#?}", path))
-        .show_confirm()
-        .unwrap();
+            .set_type(MessageType::Info)
+            .set_title("Do you want to select this directory?")
+            .set_text(&format!("{:#?}", path))
+            .show_confirm()
+            .unwrap();
 
-        let url = text.into_inner().text().to_string().as_str();
+        let text_field = text.take().text().to_string();
+        let url = text_field.as_str();
+
+        println!("{} 🤯", text.take().text());
 
         if yes {
-            button.set_label(&path.to_str().unwrap());
-            button.set_label(&run_ytdlp(&path.to_str().unwrap(), url));
+            button.set_label(&url);
+            button.set_label(&run_ytdlp(
+                &path.to_str().unwrap(),
+                url,
+                only_audio_check.take().is_active(),
+            ));
         }
     });
 
+    let center_audio_only_check = CenterBox::new();
+    center_audio_only_check.set_center_widget(Some(only_audio_check_clone.borrow().deref()));
+
+    let center_text = CenterBox::new();
+    center_text.set_center_widget(Some(text_clone.borrow().deref()));
 
     let container = gtk::Box::new(gtk::Orientation::Vertical, 0);
-    container.append(&text_clone.borrow().deref());
+    container.append(&center_text);
     container.append(&button);
+    container.append(&center_audio_only_check);
 
     // Create a window and set the title
     let window = ApplicationWindow::builder()
         .application(app)
-        .title("My GTK App")
+        .title("Yt-dlp GUI")
+        .default_width(360)
         .build();
 
     window.set_child(Some(&container));
@@ -86,20 +122,34 @@ fn build_ui(app: &Application) {
     window.show();
 }
 
-fn run_ytdlp(path: &str, url: &str) -> String {
-    use std::process::Command;
-
-    let output = {
-        Command::new("yt-dlp").current_dir(path)
-            .arg(url)
-            .output()
-            .expect("failed to execute process")
-    };
+fn run_ytdlp(path: &str, url: &str, audio_only: bool) -> String {
+    let mut output: Output;
+    if audio_only {
+        output = {
+            Command::new("yt-dlp")
+                .current_dir(path)
+                .arg("-x")
+                .arg("--audio-format")
+                .arg("mp3")
+                .arg(url)
+                .output()
+                .expect("failed to execute process")
+        };
+    } else {
+        output = {
+            Command::new("yt-dlp")
+                .current_dir(path)
+                .arg(url)
+                .output()
+                .expect("failed to execute process")
+        };
+    }
 
     let hello = output.stdout;
 
     let s = match std::str::from_utf8(&hello) {
-        Ok(v) => v,
+        //Ok(v) => v,
+        Ok(_v) => "Success",
         Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
     };
 
