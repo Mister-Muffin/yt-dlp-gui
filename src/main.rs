@@ -1,5 +1,5 @@
-use std::borrow::Borrow;
 use std::cell::RefCell;
+use std::ops::Deref;
 use std::rc::Rc;
 use gtk::prelude::*;
 use gtk::{Application, ApplicationWindow, Button, Text};
@@ -20,15 +20,13 @@ fn main() {
 
 fn build_ui(app: &Application) {
 
-    let url = Rc::new(RefCell::new(String::new()));
-
-    let text = Text::builder()
+    let (text, text_clone) = wrap(Text::builder()
         .margin_top(12)
         .margin_bottom(12)
         .margin_start(12)
         .margin_end(12)
         .text("Youtube url")
-        .build();
+        .build());
 
     // Create a button with label and margins
     let button = Button::builder()
@@ -41,7 +39,6 @@ fn build_ui(app: &Application) {
 
     // Connect to "clicked" signal of `button`
     button.connect_clicked(move|button| {
-        url.replace((*&text.text().to_string()).parse().unwrap());
         // Set the label to "Hello World!" after the button has been clicked on
         button.set_label("Hello World!");
 
@@ -64,7 +61,7 @@ fn build_ui(app: &Application) {
         .show_confirm()
         .unwrap();
 
-        let url: &str = &text.text();
+        let url = text.into_inner().text().to_string().as_str();
 
         if yes {
             button.set_label(&path.to_str().unwrap());
@@ -74,7 +71,7 @@ fn build_ui(app: &Application) {
 
 
     let container = gtk::Box::new(gtk::Orientation::Vertical, 0);
-    container.append(&text);
+    container.append(&text_clone.borrow().deref());
     container.append(&button);
 
     // Create a window and set the title
@@ -107,4 +104,9 @@ fn run_ytdlp(path: &str, url: &str) -> String {
     };
 
     s.to_owned()
+}
+
+fn wrap<T>(widget: T) -> (Rc<RefCell<T>>, Rc<RefCell<T>>)  {
+    let wrapped = Rc::new(RefCell::new(widget));
+    return (wrapped, wrapped.clone())
 }
