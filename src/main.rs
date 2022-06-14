@@ -1,5 +1,5 @@
 use gtk::prelude::*;
-use gtk::{Application, ApplicationWindow, Button, Text};
+use gtk::{Application, ApplicationWindow, Button, CenterBox, CheckButton, Text};
 use native_dialog::{FileDialog, MessageDialog, MessageType};
 use std::cell::RefCell;
 use std::ops::Deref;
@@ -26,10 +26,18 @@ fn build_ui(app: &Application) {
             .margin_start(12)
             .margin_end(12)
             .placeholder_text("Insert Youtube URL")
+            .width_chars(42)
             .build(),
     ));
 
     let text_clone = text.clone();
+
+    let only_audio_check = CheckButton::builder()
+        .label("Audio only")
+        .margin_bottom(12)
+        .margin_start(12)
+        .margin_end(12)
+        .build();
 
     // Create a button with label and margins
     let button = Button::builder()
@@ -75,15 +83,22 @@ fn build_ui(app: &Application) {
         }
     });
 
-    // Und? funktioniert? Ne :( Der Button der die Url beinhalten sollte ist leer  >:(
+    let center_audio_only_check = CenterBox::new();
+    center_audio_only_check.set_center_widget(Some(&only_audio_check));
+
+    let center_text = CenterBox::new();
+    center_text.set_center_widget(Some(text_clone.borrow().deref()));
+
     let container = gtk::Box::new(gtk::Orientation::Vertical, 0);
-    container.append(text_clone.borrow().deref());
+    container.append(&center_text);
     container.append(&button);
+    container.append(&center_audio_only_check);
 
     // Create a window and set the title
     let window = ApplicationWindow::builder()
         .application(app)
         .title("Yt-dlp GUI")
+        .default_width(360)
         .build();
 
     window.set_child(Some(&container));
@@ -92,7 +107,8 @@ fn build_ui(app: &Application) {
     window.show();
 }
 
-fn run_ytdlp(path: &str, url: &str) -> String {    use std::process::Command;
+fn run_ytdlp(path: &str, url: &str) -> String {
+    use std::process::Command;
 
     let output = {
         Command::new("yt-dlp")
