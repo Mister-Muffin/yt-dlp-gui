@@ -20,7 +20,8 @@ fn main() {
 }
 
 fn build_ui(app: &Application) {
-    let text = Rc::new(RefCell::new(
+
+    let (text_clone, text) = wrap(
         Text::builder()
             .margin_top(12)
             .margin_bottom(12)
@@ -32,7 +33,7 @@ fn build_ui(app: &Application) {
     ));
     let text_clone = text.clone();
 
-    let only_audio_check = Rc::new(RefCell::new(
+    let (only_audio_check_clone, only_audio_check) = wrap(
         CheckButton::builder()
             .label("Audio only")
             .margin_bottom(12)
@@ -115,7 +116,7 @@ fn build_ui(app: &Application) {
 }
 
 fn run_ytdlp(path: &str, url: &str, audio_only: bool) -> String {
-    let mut output: Output;
+    let output: Output;
     if audio_only {
         output = {
             Command::new("yt-dlp")
@@ -146,4 +147,9 @@ fn run_ytdlp(path: &str, url: &str, audio_only: bool) -> String {
     };
 
     s.to_owned()
+}
+
+fn wrap<T>(widget: T) -> (Rc<RefCell<T>>, Rc<RefCell<T>>)  {
+    let wrapped = Rc::new(RefCell::new(widget));
+    return (wrapped.clone(), wrapped)
 }
