@@ -30,8 +30,7 @@ fn build_ui(app: &Application) {
             .placeholder_text("Insert Youtube URL")
             .width_chars(42)
             .build(),
-    ));
-    let text_clone = text.clone();
+    );
 
     let (only_audio_check_clone, only_audio_check) = wrap(
         CheckButton::builder()
@@ -40,8 +39,7 @@ fn build_ui(app: &Application) {
             .margin_start(12)
             .margin_end(12)
             .build(),
-    ));
-    let only_audio_check_clone = only_audio_check.clone();
+    );
 
     // Create a button with label and margins
     let button = Button::builder()
@@ -140,13 +138,9 @@ fn run_ytdlp(path: &str, url: &str, audio_only: bool) -> String {
 
     let hello = output.stdout;
 
-    let s = match std::str::from_utf8(&hello) {
-        //Ok(v) => v,
-        Ok(_v) => "Success",
-        Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
-    };
+    std::str::from_utf8(&hello).expect("Invalid UTF-8 sequence");
 
-    s.to_owned()
+    "Success".to_string()
 }
 
 fn wrap<T>(widget: T) -> (Rc<RefCell<T>>, Rc<RefCell<T>>)  {
