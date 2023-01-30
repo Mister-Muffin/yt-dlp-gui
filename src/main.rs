@@ -67,7 +67,7 @@ fn build_ui(app: &Application) {
             None => return,
         };
 
-        let yes = MessageDialog::new()
+        let pressed_yes = MessageDialog::new()
             .set_type(MessageType::Info)
             .set_title("Do you want to select this directory?")
             .set_text(&format!("{:#?}", path))
@@ -79,7 +79,7 @@ fn build_ui(app: &Application) {
 
         println!("{} 🤯", text.take().text());
 
-        if yes {
+        if pressed_yes {
             button.set_label(&url);
             button.set_label(&run_ytdlp(
                 &path.to_str().unwrap(),
