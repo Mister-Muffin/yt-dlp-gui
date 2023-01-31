@@ -21,7 +21,7 @@ fn main() {
 
 fn build_ui(app: &Application) {
 
-    let (text, text_clone) = wrap(
+    let (text_clone, text) = wrap(
         Text::builder()
             .margin_top(12)
             .margin_bottom(12)
@@ -32,7 +32,7 @@ fn build_ui(app: &Application) {
             .build(),
     );
 
-    let (only_audio_check, only_audio_check_clone) = wrap(
+    let (only_audio_check_clone, only_audio_check) = wrap(
         CheckButton::builder()
             .label("Audio only")
             .margin_bottom(12)
@@ -67,7 +67,7 @@ fn build_ui(app: &Application) {
             None => return,
         };
 
-        let yes = MessageDialog::new()
+        let pressed_yes = MessageDialog::new()
             .set_type(MessageType::Info)
             .set_title("Do you want to select this directory?")
             .set_text(&format!("{:#?}", path))
@@ -79,7 +79,7 @@ fn build_ui(app: &Application) {
 
         println!("{} 🤯", text.take().text());
 
-        if yes {
+        if pressed_yes {
             button.set_label(&url);
             button.set_label(&run_ytdlp(
                 &path.to_str().unwrap(),
@@ -114,7 +114,7 @@ fn build_ui(app: &Application) {
 }
 
 fn run_ytdlp(path: &str, url: &str, audio_only: bool) -> String {
-    let mut output: Output;
+    let output: Output;
     if audio_only {
         output = {
             Command::new("yt-dlp")
@@ -145,5 +145,5 @@ fn run_ytdlp(path: &str, url: &str, audio_only: bool) -> String {
 
 fn wrap<T>(widget: T) -> (Rc<RefCell<T>>, Rc<RefCell<T>>)  {
     let wrapped = Rc::new(RefCell::new(widget));
-    return (wrapped, wrapped.clone())
+    return (wrapped.clone(), wrapped)
 }
