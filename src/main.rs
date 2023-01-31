@@ -20,7 +20,6 @@ fn main() {
 }
 
 fn build_ui(app: &Application) {
-
     let (text_clone, text) = wrap(
         Text::builder()
             .margin_top(12)
@@ -67,25 +66,26 @@ fn build_ui(app: &Application) {
             None => return,
         };
 
+        let path_string = path.as_path().to_str().unwrap();
+
         let pressed_yes = MessageDialog::new()
             .set_type(MessageType::Info)
             .set_title("Do you want to select this directory?")
-            .set_text(&format!("{:#?}", path))
+            .set_text(&format!("{}", path_string))
             .show_confirm()
             .unwrap();
 
         let text_field = text.take().text().to_string();
         let url = text_field.as_str();
 
-        println!("{} 🤯", text.take().text());
-
         if pressed_yes {
             button.set_label(&url);
             button.set_label(&run_ytdlp(
-                &path.to_str().unwrap(),
+                &path_string,
                 url,
                 only_audio_check.take().is_active(),
             ));
+            println!("{}", path_string)
         }
     });
 
@@ -143,7 +143,7 @@ fn run_ytdlp(path: &str, url: &str, audio_only: bool) -> String {
     "Success".to_string()
 }
 
-fn wrap<T>(widget: T) -> (Rc<RefCell<T>>, Rc<RefCell<T>>)  {
+fn wrap<T>(widget: T) -> (Rc<RefCell<T>>, Rc<RefCell<T>>) {
     let wrapped = Rc::new(RefCell::new(widget));
-    return (wrapped.clone(), wrapped)
+    return (wrapped.clone(), wrapped);
 }
